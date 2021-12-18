@@ -33,9 +33,15 @@ public class Main {
                     var namefahrer = reise.getFahrer();
                     var nameZahler = listePersonen.get(i).getName();
                     var kosten = reise.getKosten();
-                    var anzahl = reise.getAnzahlPersonen();
                     var date = reise.getDatum();
-                    myWriter.write(nameZahler + ";" + namefahrer + ";" + kosten + ";" + anzahl + ";" + date + "\n");
+                    myWriter.write(nameZahler + ";" + namefahrer + ";" + kosten + ";");
+
+                    for(int r = 0; r < listePersonen.size(); r++) {
+                        for (int t = 0; t < listePersonen.get(i).getListeReisekosten().get(r).getAnzahlPersonen().size(); t++) {
+                            myWriter.write(listePersonen.get(i).getListeReisekosten().get(r).getAnzahlPersonen().get(t).getName() + "!");
+                        }
+                    }
+                    myWriter.write(";" + date + "\n");
                 }
             } else {
                 myWriter.write(listePersonen.get(i).getName() + ";" + "\n");
@@ -62,7 +68,14 @@ public class Main {
                         listePersonen.add(p);
                     }
                     String[] hilfe = daten[4].split("-");
-                    p.fuegeNeueReiseHinzu(new Reisekosten(Integer.parseInt(daten[3]), LocalDate.of(Integer.parseInt(hilfe[0]), Integer.parseInt(hilfe[1]), Integer.parseInt(hilfe[2])), Double.parseDouble(daten[2]), daten[1]));
+
+                    String[] hilfe2 = daten[3].split("!");
+                    ArrayList<Person> neueListe = new ArrayList<>();
+                    for(int u = 0; u < daten.length; u++){
+                        Person q = new Person(daten[u]);
+                        neueListe.add(q);
+                    }
+                    p.fuegeNeueReiseHinzu(new Reisekosten(neueListe, LocalDate.of(Integer.parseInt(hilfe[0]), Integer.parseInt(hilfe[1]), Integer.parseInt(hilfe[2])), Double.parseDouble(daten[2]), daten[1]));
 
                 } else if (daten.length == 1) {
                     Person p = new Person(daten[0]);
@@ -89,7 +102,7 @@ public class Main {
         if (eingabe.equalsIgnoreCase("y")) {
 
             Person zahler;
-            int anzMitfahrer;
+            ArrayList<Person> anzMitfahrer;
             double kosten;
             LocalDate datum;
             String nameFahrer;
@@ -120,11 +133,11 @@ public class Main {
         return new SearchResult<>(null, -1);
     }
 
-    private static void reisekostenZuPersonHinzufuegen(int anzMitfahrer, LocalDate datum, double kosten, String nameFahrer, Person zahler) {
+    private static void reisekostenZuPersonHinzufuegen(ArrayList<Person> anzMitfahrer, LocalDate datum, double kosten, String nameFahrer, Person zahler) {
         zahler.fuegeNeueReiseHinzu(new Reisekosten(anzMitfahrer, datum, kosten, nameFahrer));
     }
 
-    private static String ermittleNameZahler() {
+    private static String ermittleNameZahler() {//yes abfrage rüfen
         String nameZahler = "";
         if (listePersonen.size() > 0) {
             System.out.println("Handelt es sich bei dem Zahler um eine dieser Personen? (y/n) ");
@@ -201,15 +214,17 @@ public class Main {
         return kosten;
     }
 
-    private static int ermittleAnzahlMitfahrer() {
-        int anzMitfahrer;
+    private static ArrayList<Person> ermittleAnzahlMitfahrer() {
+        ArrayList<Person> anzMitfahrer = new ArrayList<>();
         while (true) {
             try {
                 System.out.println("");
-                System.out.println("Geben Sie die Anzahl der Mitfahrer an: ");
-                anzMitfahrer = scanner.nextInt();
-                scanner.nextLine();
-                break;
+                System.out.println("Geben Sie die Namen des Mitfahrers an: ");
+                anzMitfahrer.add(new Person(scanner.nextLine()));
+                System.out.println("Ist noch jemand mitgefahren?(y/n)");
+                String answer = scanner.nextLine();
+                if(!answer.equalsIgnoreCase("y"))
+                    break;
             } catch (Exception e) {
                 System.out.println("Die Eingabe wurde nicht akzeptiert");
                 scanner.nextLine();
